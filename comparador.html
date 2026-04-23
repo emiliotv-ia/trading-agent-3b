@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Comparador — 3 Agentes</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:system-ui,-apple-system,sans-serif;background:#f5f5f5;color:#111;}
+.header{background:#fff;border-bottom:1px solid #e0e0e0;padding:12px 24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;}
+.header h1{font-size:17px;font-weight:600;}
+.container{max-width:1300px;margin:0 auto;padding:20px;}
+.pulse{width:8px;height:8px;border-radius:50%;display:inline-block;}
+.on-1{background:#1D9E75;animation:beat .9s infinite;}
+.on-2{background:#6c3fc5;animation:beat .9s infinite;}
+.on-3{background:#d97706;animation:beat .9s infinite;}
+.off{background:#aaa;}
+@keyframes beat{0%,100%{opacity:1;}50%{opacity:.2;}}
+
+.card{background:#fff;border-radius:10px;padding:16px 20px;margin-bottom:14px;border:1px solid #e8e8e8;}
+.ct{font-size:13px;font-weight:600;color:#666;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;}
+.badge{display:inline-block;font-size:10px;padding:2px 7px;border-radius:4px;font-weight:500;margin-left:4px;}
+.bg{background:#dcfce7;color:#166534;}.br{background:#fee2e2;color:#991b1b;}
+.bb{background:#ede9fe;color:#5b21b6;}.ba{background:#fef9c3;color:#854d0e;}
+.bo{background:#fef3c7;color:#92400e;}.bx{background:#f3f4f6;color:#555;}
+.g{color:#0F6E56;}.r{color:#A32D2D;}
+
+/* 3-col agent panels */
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:16px;}
+@media(max-width:900px){.three-col{grid-template-columns:1fr;}}
+@media(max-width:600px){.two-col{grid-template-columns:1fr;}}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+
+/* Agent panels */
+.agent-panel{background:#fff;border-radius:12px;overflow:hidden;border:2px solid #e8e8e8;}
+.agent-header{padding:12px 16px;display:flex;justify-content:space-between;align-items:center;}
+.a1h{background:linear-gradient(135deg,#e8faf4,#f0fdf4);border-bottom:2px solid #1D9E75;}
+.a2h{background:linear-gradient(135deg,#f0ebff,#faf5ff);border-bottom:2px solid #6c3fc5;}
+.a3h{background:linear-gradient(135deg,#fffbeb,#fef3c7);border-bottom:2px solid #d97706;}
+.a1n{color:#0F6E56;font-size:14px;font-weight:700;}
+.a2n{color:#5b21b6;font-size:14px;font-weight:700;}
+.a3n{color:#b45309;font-size:14px;font-weight:700;}
+.agent-body{padding:14px 16px;}
+
+/* Mini metric grid */
+.mg3{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;}
+.mc{background:#f9f9f9;border-radius:8px;padding:10px 12px;border:1px solid #f0f0f0;}
+.ml{font-size:10px;color:#888;text-transform:uppercase;letter-spacing:.03em;margin-bottom:2px;}
+.mv{font-size:18px;font-weight:600;}
+.ms{font-size:11px;margin-top:2px;color:#888;}
+.a1v{color:#0F6E56;}.a2v{color:#5b21b6;}.a3v{color:#d97706;}
+
+/* DD bar */
+.dd-bar-wrap{height:5px;border-radius:3px;background:#f0f0f0;margin-top:4px;overflow:hidden;}
+.dd-bar-fill{height:100%;border-radius:3px;transition:width .6s;}
+
+/* Comparison table */
+.cmp-table{width:100%;border-collapse:collapse;font-size:13px;}
+.cmp-table th{padding:9px 12px;text-align:left;font-size:11px;color:#888;text-transform:uppercase;border-bottom:2px solid #f0f0f0;}
+.cmp-table td{padding:9px 12px;border-bottom:1px solid #f5f5f5;vertical-align:middle;}
+.cmp-table tr:last-child td{border-bottom:none;}
+.cmp-table tr:hover td{background:#fafafa;}
+.lbl{color:#555;font-weight:500;}
+.winner{font-weight:700;}
+.a1v2{color:#0F6E56;}.a2v2{color:#5b21b6;}.a3v2{color:#d97706;}
+
+/* Tabs */
+.tabs{display:flex;gap:4px;border-bottom:1px solid #e0e0e0;margin-bottom:20px;flex-wrap:wrap;}
+.tab{padding:9px 16px;font-size:13px;cursor:pointer;border:none;background:none;color:#888;border-bottom:2px solid transparent;margin-bottom:-1px;}
+.tab.active{color:#111;border-bottom:2px solid #555;font-weight:500;}
+.sp{display:none;}.sp.active{display:block;}
+
+/* Logs */
+.logbox{background:#f9f9f9;border-radius:8px;padding:10px 12px;font-size:11px;font-family:monospace;line-height:1.8;max-height:220px;overflow-y:auto;}
+.le{display:flex;gap:6px;padding:1px 0;border-bottom:1px solid #f0f0f0;}
+.le:last-child{border-bottom:none;}
+.lt{color:#aaa;min-width:56px;flex-shrink:0;}
+.buy{color:#0F6E56;font-weight:500;}.sell{color:#A32D2D;font-weight:500;}
+.think{color:#555;}.warn{color:#854F0B;}
+
+/* Score bars */
+.sbar{height:4px;border-radius:2px;background:#f0f0f0;margin-top:3px;overflow:hidden;}
+.sfill{height:100%;border-radius:2px;}
+
+.stat-row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #f0f0f0;font-size:13px;align-items:center;}
+.stat-row:last-child{border-bottom:none;}
+
+/* Config modal */
+#cfg-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:999;align-items:center;justify-content:center;}
+#cfg-modal.open{display:flex;}
+.modal-box{background:#fff;border-radius:14px;padding:28px;width:100%;max-width:460px;}
+.modal-box h3{font-size:16px;font-weight:600;margin-bottom:16px;}
+.modal-box label{font-size:12px;color:#555;display:block;margin-bottom:4px;margin-top:12px;font-weight:500;}
+.modal-box input{width:100%;padding:9px 13px;border:1px solid #ddd;border-radius:8px;font-size:13px;}
+.modal-box input:focus{outline:none;border-color:#555;}
+.modal-btns{display:flex;gap:8px;margin-top:18px;justify-content:flex-end;}
+.btn{padding:8px 18px;border-radius:8px;border:1px solid #ddd;background:#fff;color:#111;font-size:13px;cursor:pointer;}
+.btn:hover{background:#f5f5f5;}
+.btn-go{background:#555;color:#fff;border-color:#333;}
+.btn-go:hover{opacity:.88;}
+.btn-sm{padding:5px 12px;font-size:12px;}
+
+/* Login */
+#login-screen{position:fixed;inset:0;background:#f5f5f5;display:flex;align-items:center;justify-content:center;z-index:9999;}
+.login-box{background:#fff;border:1px solid #e0e0e0;border-radius:14px;padding:36px 32px;width:100%;max-width:340px;box-shadow:0 4px 24px rgba(0,0,0,.07);}
+.login-box h2{font-size:17px;font-weight:600;margin-bottom:6px;}
+.login-box p{font-size:12px;color:#888;margin-bottom:24px;}
+.login-box input{width:100%;padding:10px 14px;border:1px solid #ddd;border-radius:8px;font-size:14px;margin-bottom:12px;outline:none;}
+.login-box button{width:100%;padding:11px;background:#555;color:#fff;border:none;border-radius:8px;font-size:14px;cursor:pointer;font-weight:500;}
+#login-error{font-size:12px;color:#A32D2D;margin-top:8px;display:none;}
+
+/* Offline banner */
+.offline-banner{background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;padding:8px 14px;font-size:12px;color:#9a3412;margin-bottom:10px;display:none;}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-box">
+    <h2>Comparador de Agentes</h2>
+    <p>Ingresá la contraseña para acceder.</p>
+    <input type="password" id="pwd-input" placeholder="Contraseña" onkeydown="if(event.key==='Enter')checkLogin()">
+    <button onclick="checkLogin()">Entrar</button>
+    <div id="login-error">Contraseña incorrecta.</div>
+  </div>
+</div>
+
+<!-- CONFIG MODAL -->
+<div id="cfg-modal">
+  <div class="modal-box">
+    <h3>URLs de los agentes</h3>
+    <label>🟢 Agente 1 — Estrategia Simple</label>
+    <input type="text" id="url1-input" placeholder="https://trading-agent-xxxx.onrender.com">
+    <label>🟣 Agente 2 — MTF + ML + Kelly</label>
+    <input type="text" id="url2-input" placeholder="https://trading-agent-2.onrender.com">
+    <label>🟠 Agente 3 — Multi-Factor Convergence</label>
+    <input type="text" id="url3-input" placeholder="https://trading-agent-3.onrender.com">
+    <div class="modal-btns">
+      <button class="btn" onclick="closeCfg()">Cancelar</button>
+      <button class="btn btn-go" onclick="saveUrls()">Guardar y conectar</button>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app" style="display:none;">
+<div class="header">
+  <div style="display:flex;align-items:center;gap:14px;">
+    <h1>Comparador — 3 Agentes</h1>
+    <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#888;">
+      <span class="pulse off" id="p1"></span>A1
+      <span class="pulse off" id="p2" style="margin-left:6px;"></span>A2
+      <span class="pulse off" id="p3" style="margin-left:6px;"></span>A3
+    </div>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px;">
+    <span id="last-sync" style="font-size:11px;color:#aaa;"></span>
+    <button class="btn btn-sm" onclick="openCfg()">URLs</button>
+    <button class="btn btn-sm btn-go" onclick="refreshAll()">↻ Actualizar</button>
+  </div>
+</div>
+
+<div class="container">
+  <div id="offline-banner" class="offline-banner"></div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('compare',this)">Comparación</button>
+    <button class="tab" onclick="showTab('detail',this)">Detalle por agente</button>
+    <button class="tab" onclick="showTab('logs',this)">Logs en vivo</button>
+  </div>
+
+  <!-- COMPARACIÓN TAB -->
+  <div id="tab-compare" class="sp active">
+
+    <!-- 3 agent panels -->
+    <div class="three-col">
+      <!-- A1 -->
+      <div class="agent-panel">
+        <div class="agent-header a1h">
+          <div><span class="a1n">Agente 1</span><span class="badge bx" style="margin-left:6px;">Simple</span></div>
+          <span id="a1-status-lbl" style="font-size:11px;color:#888;">—</span>
+        </div>
+        <div class="agent-body">
+          <div class="mg3">
+            <div class="mc"><div class="ml">Capital</div><div class="mv a1v" id="a1-cap">—</div><div class="ms" id="a1-pct">—</div></div>
+            <div class="mc"><div class="ml">Win rate</div><div class="mv" id="a1-wr">—</div><div class="ms" id="a1-ops">—</div></div>
+            <div class="mc"><div class="ml">Cash</div><div class="mv" id="a1-cash">—</div></div>
+            <div class="mc"><div class="ml">Estado</div><div class="mv" id="a1-state" style="font-size:13px;">—</div></div>
+          </div>
+          <div id="a1-pos-lbl" style="font-size:11px;color:#555;"></div>
+        </div>
+      </div>
+      <!-- A2 -->
+      <div class="agent-panel">
+        <div class="agent-header a2h">
+          <div><span class="a2n">Agente 2</span><span class="badge bb" style="margin-left:6px;">MTF + ML</span></div>
+          <span id="a2-status-lbl" style="font-size:11px;color:#888;">—</span>
+        </div>
+        <div class="agent-body">
+          <div class="mg3">
+            <div class="mc"><div class="ml">Capital</div><div class="mv a2v" id="a2-cap">—</div><div class="ms" id="a2-pct">—</div></div>
+            <div class="mc"><div class="ml">Win rate</div><div class="mv" id="a2-wr">—</div><div class="ms" id="a2-ops">—</div></div>
+            <div class="mc"><div class="ml">Drawdown</div><div class="mv" id="a2-dd">—</div><div class="dd-bar-wrap"><div class="dd-bar-fill" id="a2-dd-bar"></div></div></div>
+            <div class="mc"><div class="ml">ML</div><div class="mv" id="a2-ml" style="font-size:13px;">—</div></div>
+          </div>
+          <div style="font-size:11px;color:#555;" id="a2-pos-lbl"></div>
+        </div>
+      </div>
+      <!-- A3 -->
+      <div class="agent-panel">
+        <div class="agent-header a3h">
+          <div><span class="a3n">Agente 3</span><span class="badge bo" style="margin-left:6px;">Multi-Factor</span></div>
+          <span id="a3-status-lbl" style="font-size:11px;color:#888;">—</span>
+        </div>
+        <div class="agent-body">
+          <div class="mg3">
+            <div class="mc"><div class="ml">Capital</div><div class="mv a3v" id="a3-cap">—</div><div class="ms" id="a3-pct">—</div></div>
+            <div class="mc"><div class="ml">Win rate</div><div class="mv" id="a3-wr">—</div><div class="ms" id="a3-ops">—</div></div>
+            <div class="mc"><div class="ml">Drawdown</div><div class="mv" id="a3-dd">—</div><div class="dd-bar-wrap"><div class="dd-bar-fill" id="a3-dd-bar"></div></div></div>
+            <div class="mc"><div class="ml">Barras</div><div class="mv" id="a3-bars" style="font-size:13px;">—</div></div>
+          </div>
+          <div style="font-size:11px;color:#555;" id="a3-pos-lbl"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Comparison table -->
+    <div class="card">
+      <div class="ct">Comparación directa</div>
+      <table class="cmp-table">
+        <thead>
+          <tr>
+            <th>Métrica</th>
+            <th style="color:#0F6E56;">Agente 1</th>
+            <th style="color:#5b21b6;">Agente 2</th>
+            <th style="color:#d97706;">Agente 3</th>
+            <th>Ventaja</th>
+          </tr>
+        </thead>
+        <tbody id="cmp-body">
+          <tr><td colspan="5" style="text-align:center;padding:2rem;color:#888;">Cargando...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Last decisions side by side -->
+    <div class="three-col">
+      <div class="card"><div class="ct" style="color:#0F6E56;">Últimas — Agente 1</div><div id="a1-dec"></div></div>
+      <div class="card"><div class="ct" style="color:#5b21b6;">Últimas — Agente 2</div><div id="a2-dec"></div></div>
+      <div class="card"><div class="ct" style="color:#d97706;">Últimas — Agente 3</div><div id="a3-dec"></div></div>
+    </div>
+  </div>
+
+  <!-- DETALLE TAB -->
+  <div id="tab-detail" class="sp">
+    <div class="three-col">
+      <div class="card">
+        <div class="ct" style="color:#0F6E56;border-bottom:2px solid #1D9E75;padding-bottom:8px;">Agente 1 — Simple</div>
+        <div id="a1-full" style="font-size:13px;color:#888;margin-top:8px;">—</div>
+        <div style="margin-top:14px;font-size:12px;font-weight:600;color:#666;margin-bottom:8px;">Scores</div>
+        <div id="a1-scores"></div>
+        <div style="margin-top:14px;font-size:12px;font-weight:600;color:#666;margin-bottom:8px;">Posiciones</div>
+        <div id="a1-pos"></div>
+      </div>
+      <div class="card">
+        <div class="ct" style="color:#5b21b6;border-bottom:2px solid #6c3fc5;padding-bottom:8px;">Agente 2 — MTF + ML</div>
+        <div id="a2-full" style="font-size:13px;color:#888;margin-top:8px;">—</div>
+        <div style="margin-top:14px;font-size:12px;font-weight:600;color:#666;margin-bottom:8px;">Scores</div>
+        <div id="a2-scores"></div>
+        <div style="margin-top:14px;font-size:12px;font-weight:600;color:#666;margin-bottom:8px;">Posiciones</div>
+        <div id="a2-pos"></div>
+      </div>
+      <div class="card">
+        <div class="ct" style="color:#d97706;border-bottom:2px solid #d97706;padding-bottom:8px;">Agente 3 — Multi-Factor</div>
+        <div id="a3-full" style="font-size:13px;color:#888;margin-top:8px;">—</div>
+        <div style="margin-top:14px;font-size:12px;font-weight:600;color:#666;margin-bottom:8px;">Convergencia top</div>
+        <div id="a3-factors"></div>
+        <div style="margin-top:14px;font-size:12px;font-weight:600;color:#666;margin-bottom:8px;">Posiciones</div>
+        <div id="a3-pos"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LOGS TAB -->
+  <div id="tab-logs" class="sp">
+    <div class="three-col">
+      <div class="card"><div class="ct" style="color:#0F6E56;">Log Agente 1</div><div class="logbox" id="log1"><div style="color:#888;">—</div></div></div>
+      <div class="card"><div class="ct" style="color:#5b21b6;">Log Agente 2</div><div class="logbox" id="log2"><div style="color:#888;">—</div></div></div>
+      <div class="card"><div class="ct" style="color:#d97706;">Log Agente 3</div><div class="logbox" id="log3"><div style="color:#888;">—</div></div></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+const PASSWORD = 'Pichuki12*';
+let URL1 = localStorage.getItem('agent1_url') || 'https://trading-agent-xpiu.onrender.com';
+let URL2 = localStorage.getItem('agent2_url') || 'https://trading-agent-2.onrender.com';
+let URL3 = localStorage.getItem('agent3_url') || 'https://trading-agent-3web.onrender.com';
+
+let data1=null, data2=null, data3=null;
+const SECTOR={NVDA:'Chips IA',MSFT:'Cloud/IA',META:'IA Consumo',GOOGL:'IA/Search',
+  AMZN:'Cloud',PLTR:'Data IA',ARKK:'ETF Tech',QQQ:'ETF NASDAQ',
+  MU:'Chips/Memoria',TSM:'Chips IA',CEG:'Energía',GEV:'Energía'};
+
+// ---- LOGIN ----
+function checkLogin(){
+  if(document.getElementById('pwd-input').value===PASSWORD){
+    sessionStorage.setItem('auth_cmp3','ok');
+    document.getElementById('login-screen').style.display='none';
+    document.getElementById('app').style.display='block';
+    refreshAll();
+  } else {
+    document.getElementById('login-error').style.display='block';
+    document.getElementById('pwd-input').value='';
+  }
+}
+if(sessionStorage.getItem('auth_cmp3')==='ok'){
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app').style.display='block';
+}
+
+// ---- CONFIG MODAL ----
+function openCfg(){
+  document.getElementById('url1-input').value=URL1;
+  document.getElementById('url2-input').value=URL2;
+  document.getElementById('url3-input').value=URL3;
+  document.getElementById('cfg-modal').classList.add('open');
+}
+function closeCfg(){document.getElementById('cfg-modal').classList.remove('open');}
+function saveUrls(){
+  URL1=document.getElementById('url1-input').value.replace(/\/$/,'');
+  URL2=document.getElementById('url2-input').value.replace(/\/$/,'');
+  URL3=document.getElementById('url3-input').value.replace(/\/$/,'');
+  localStorage.setItem('agent1_url',URL1);
+  localStorage.setItem('agent2_url',URL2);
+  localStorage.setItem('agent3_url',URL3);
+  closeCfg(); refreshAll();
+}
+
+// ---- API ----
+async function fetchAgent(url){
+  const r=await fetch(url+'/state');
+  return r.json();
+}
+async function fetchFactors(url){
+  const r=await fetch(url+'/factors');
+  return r.json();
+}
+function fmt(n){return'$'+Math.abs(n||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function fmtPct(n){return(n>=0?'+':'')+n+'%';}
+
+// ---- REFRESH ----
+async function refreshAll(){
+  const [r1,r2,r3]=await Promise.allSettled([
+    fetchAgent(URL1), fetchAgent(URL2), fetchAgent(URL3)
+  ]);
+  const offline=[];
+  if(r1.status==='fulfilled'){data1=r1.value; renderAgent(1,data1);}
+  else{setOffline(1); offline.push('Agente 1');}
+  if(r2.status==='fulfilled'){data2=r2.value; renderAgent(2,data2);}
+  else{setOffline(2); offline.push('Agente 2');}
+  if(r3.status==='fulfilled'){data3=r3.value; renderAgent(3,data3);}
+  else{setOffline(3); offline.push('Agente 3');}
+
+  const banner=document.getElementById('offline-banner');
+  if(offline.length){
+    banner.style.display='block';
+    banner.textContent='⚠️ Sin conexión: '+offline.join(', ')+'. Verificá las URLs en el botón "URLs".';
+  } else {
+    banner.style.display='none';
+  }
+  renderComparison();
+  document.getElementById('last-sync').textContent='sync '+new Date().toLocaleTimeString('es-AR');
+
+  // Fetch factors for agent 3 detail
+  if(r3.status==='fulfilled'){
+    try{
+      const fd=await fetchFactors(URL3);
+      renderA3Factors(fd.ranked||[], fd.threshold||4);
+    }catch(e){}
+  }
+}
+
+function setOffline(n){
+  document.getElementById('p'+n).className='pulse off';
+  document.getElementById('a'+n+'-status-lbl').textContent='Sin conexión';
+  document.getElementById('a'+n+'-status-lbl').style.color='#A32D2D';
+}
+
+// ---- RENDER AGENT ----
+function renderAgent(n, d){
+  const pulseClass = n===1?'on-1':n===2?'on-2':'on-3';
+  const valClass   = n===1?'a1v':n===2?'a2v':'a3v';
+
+  document.getElementById('p'+n).className='pulse '+pulseClass;
+  document.getElementById('a'+n+'-status-lbl').textContent= d.running?'Corriendo':'Detenido';
+  document.getElementById('a'+n+'-status-lbl').style.color= d.running?(n===1?'#0F6E56':n===2?'#5b21b6':'#d97706'):'#888';
+
+  document.getElementById('a'+n+'-cap').textContent=fmt(d.total||0);
+  const pEl=document.getElementById('a'+n+'-pct');
+  pEl.textContent=fmtPct(d.pnl_pct||0);
+  pEl.className='ms '+(d.pnl_pct>=0?'g':'r');
+  document.getElementById('a'+n+'-wr').textContent=(d.win_rate||0)+'%';
+  document.getElementById('a'+n+'-ops').textContent=(d.history_count||0)+' ops';
+  document.getElementById('a'+n+'-cash').textContent=fmt(d.cash||0);
+
+  // State label
+  const stEl=document.getElementById('a'+n+'-state');
+  if(stEl){
+    stEl.textContent=d.drawdown_stopped?'Stop DD':d.running?'Activo':'Detenido';
+    stEl.style.color=d.drawdown_stopped?'#A32D2D':d.running?(n===1?'#0F6E56':n===2?'#5b21b6':'#d97706'):'#888';
+  }
+
+  // Drawdown (A2 & A3)
+  const ddEl=document.getElementById('a'+n+'-dd');
+  if(ddEl && d.current_drawdown!=null){
+    const dd=d.current_drawdown||0;
+    const col=dd<5?'#1D9E75':dd<10?'#f59e0b':'#E24B4A';
+    ddEl.textContent=dd.toFixed(1)+'%';
+    ddEl.style.color=col;
+    const bar=document.getElementById('a'+n+'-dd-bar');
+    if(bar){bar.style.width=Math.min(100,(dd/15)*100)+'%';bar.style.background=col;}
+  }
+
+  // ML (A2)
+  const mlEl=document.getElementById('a'+n+'-ml');
+  if(mlEl && d.ml_active!=null){
+    mlEl.textContent=d.ml_active?'Activo':'Acumulando';
+    mlEl.style.color=d.ml_active?'#0F6E56':'#854d0e';
+  }
+
+  // Bars (A3)
+  const barsEl=document.getElementById('a'+n+'-bars');
+  if(barsEl && d.bars_collected!=null){
+    barsEl.textContent=d.bars_collected+'/'+d.bars_needed;
+    barsEl.style.color=d.bars_ready?'#0F6E56':'#854d0e';
+  }
+
+  // Position label
+  const plEl=document.getElementById('a'+n+'-pos-lbl');
+  if(plEl){
+    const open=Object.entries(d.positions||{}).filter(([,p])=>p&&p.qty>0);
+    plEl.textContent=open.length?'Posiciones: '+open.map(([s])=>s).join(', '):'Sin posiciones abiertas';
+  }
+
+  // Full detail
+  renderFullState(n, d);
+  renderScores('a'+n+'-scores', d.scores||{});
+  renderPositions('a'+n+'-pos', d.positions||{});
+  renderDecisions('a'+n+'-dec', d.decisions||[]);
+  renderLog('log'+n, d.log||[]);
+}
+
+// ---- COMPARISON TABLE ----
+function renderComparison(){
+  const d1=data1||{}, d2=data2||{}, d3=data3||{};
+
+  function winner3(v1,v2,v3,higherIsBetter=true){
+    if(!data1&&!data2&&!data3) return null;
+    const vals=[];
+    if(data1) vals.push([1,v1]);
+    if(data2) vals.push([2,v2]);
+    if(data3) vals.push([3,v3]);
+    if(!vals.length) return null;
+    vals.sort((a,b)=>higherIsBetter?(b[1]-a[1]):(a[1]-b[1]));
+    return vals[0][0];
+  }
+
+  const rows=[
+    {label:'Capital actual',
+     v1:fmt(d1.total||0), v2:fmt(d2.total||0), v3:fmt(d3.total||0),
+     n1:d1.total||0, n2:d2.total||0, n3:d3.total||0, higher:true},
+    {label:'P&L (%)',
+     v1:fmtPct(d1.pnl_pct||0), v2:fmtPct(d2.pnl_pct||0), v3:fmtPct(d3.pnl_pct||0),
+     n1:d1.pnl_pct||0, n2:d2.pnl_pct||0, n3:d3.pnl_pct||0, higher:true},
+    {label:'Win rate',
+     v1:(d1.win_rate||0)+'%', v2:(d2.win_rate||0)+'%', v3:(d3.win_rate||0)+'%',
+     n1:d1.win_rate||0, n2:d2.win_rate||0, n3:d3.win_rate||0, higher:true},
+    {label:'Operaciones',
+     v1:String(d1.history_count||0), v2:String(d2.history_count||0), v3:String(d3.history_count||0),
+     n1:d1.history_count||0, n2:d2.history_count||0, n3:d3.history_count||0, higher:true},
+    {label:'Ciclos ejecutados',
+     v1:String(d1.cycle||0), v2:String(d2.cycle||0), v3:String(d3.cycle||0),
+     n1:null},
+    {label:'Drawdown actual',
+     v1:'N/A', v2:(d2.current_drawdown||0).toFixed(1)+'%', v3:(d3.current_drawdown||0).toFixed(1)+'%',
+     n1:null, note:'Mínimo = mejor'},
+    {label:'ML Online',
+     v1:'No', v2:d2.ml_active?'Activo':'Acumulando', v3:d3.ml_active?'Activo':'Acumulando',
+     n1:null, note:'Solo A2 y A3'},
+    {label:'Kelly Criterion',
+     v1:'No', v2:'Sí (5%-25%)', v3:'Sí (5%-25%)',
+     n1:null},
+    {label:'Estrategia',
+     v1:'MA/RSI simple', v2:'MTF + Fibonacci + EMA50', v3:'7 factores convergencia',
+     n1:null},
+    {label:'Posiciones abiertas',
+     v1:String(Object.values(d1.positions||{}).filter(p=>p&&p.qty>0).length),
+     v2:String(Object.values(d2.positions||{}).filter(p=>p&&p.qty>0).length),
+     v3:String(Object.values(d3.positions||{}).filter(p=>p&&p.qty>0).length),
+     n1:null},
+    {label:'Estado',
+     v1:d1.running?'Corriendo':'Detenido',
+     v2:d2.drawdown_stopped?'Stop DD':d2.running?'Corriendo':'Detenido',
+     v3:d3.drawdown_stopped?'Stop DD':d3.running?'Corriendo':'Detenido',
+     n1:null},
+  ];
+
+  const wLabels={1:'<span class="badge bg">A1</span>',2:'<span class="badge bb">A2</span>',3:'<span class="badge bo">A3</span>'};
+  const vClasses={1:'a1v2',2:'a2v2',3:'a3v2'};
+
+  const body=document.getElementById('cmp-body');
+  body.innerHTML=rows.map(row=>{
+    let w=null;
+    if(row.n1!=null){
+      w=winner3(row.n1, row.n2, row.n3, row.higher!==false);
+    }
+    const cls1=w===1?' winner a1v2':'';
+    const cls2=w===2?' winner a2v2':'';
+    const cls3=w===3?' winner a3v2':'';
+    const winnerCell=w?wLabels[w]:(row.note?`<span style="font-size:11px;color:#aaa;">${row.note}</span>`:'<span style="font-size:11px;color:#ddd;">—</span>');
+    return `<tr>
+      <td class="lbl">${row.label}</td>
+      <td class="a1v2${cls1}">${row.v1}</td>
+      <td class="a2v2${cls2}">${row.v2}</td>
+      <td class="a3v2${cls3}">${row.v3}</td>
+      <td>${winnerCell}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ---- HELPERS ----
+function renderFullState(n, d){
+  const el=document.getElementById('a'+n+'-full');
+  if(!el) return;
+  const fields=[
+    ['Capital', fmt(d.total||0)],
+    ['P&L', `<span class="${(d.pnl_pct||0)>=0?'g':'r'}">${fmtPct(d.pnl_pct||0)}</span>`],
+    ['Cash', fmt(d.cash||0)],
+    ['Wins / Losses', `${d.wins||0} / ${d.losses||0}`],
+    ['Ciclos', d.cycle||0],
+    ['MA lista', d.ma_ready?'Sí':'No ('+d.ma_progress+')'],
+    ['Mercado', d.market_open===true?'Abierto':d.market_open===false?'Cerrado':'—'],
+    d.current_drawdown!=null?['Drawdown', `<span style="color:${(d.current_drawdown||0)>=10?'#E24B4A':(d.current_drawdown||0)>=5?'#f59e0b':'#1D9E75'}">${(d.current_drawdown||0).toFixed(1)}%</span>`]:null,
+    d.ml_active!=null?['ML', d.ml_active?'<span class="badge bg">activo</span>':'<span class="badge ba">acumulando</span>']:null,
+    d.bars_collected!=null?['Barras', d.bars_collected+'/'+d.bars_needed+(d.bars_ready?' ✓':'')]:null,
+  ].filter(Boolean);
+  el.innerHTML=fields.map(([k,v])=>`<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #f5f5f5;font-size:12px;"><span style="color:#888;">${k}</span><span>${v}</span></div>`).join('');
+}
+
+function renderScores(elId, scores){
+  const el=document.getElementById(elId);
+  if(!el) return;
+  const entries=Object.entries(scores).sort((a,b)=>b[1].score-a[1].score).slice(0,6);
+  if(!entries.length){el.innerHTML='<div style="font-size:12px;color:#888;">Sin datos.</div>';return;}
+  el.innerHTML=entries.map(([sym,sc])=>{
+    const wr=sc.trades>0?(sc.wins/sc.trades*100).toFixed(0)+'%':'—';
+    const col=sc.score>65?'#1D9E75':sc.score<35?'#E24B4A':'#f59e0b';
+    return `<div style="margin-bottom:8px;">
+      <div style="display:flex;justify-content:space-between;font-size:11px;">
+        <span style="font-weight:600;">${sym}</span>
+        <span style="color:#888;">wr:${wr} · <strong style="color:${col};">${sc.score.toFixed(0)}</strong></span>
+      </div>
+      <div class="sbar"><div class="sfill" style="width:${sc.score}%;background:${col};"></div></div>
+    </div>`;
+  }).join('');
+}
+
+function renderPositions(elId, positions){
+  const el=document.getElementById(elId);
+  if(!el) return;
+  const open=Object.entries(positions).filter(([,p])=>p&&p.qty>0);
+  if(!open.length){el.innerHTML='<div style="font-size:12px;color:#888;">Sin posiciones.</div>';return;}
+  el.innerHTML=open.map(([sym,pos])=>`<div class="stat-row" style="font-size:12px;"><span style="font-weight:600;">${sym}</span><span>${pos.qty} @ ${fmt(pos.avg_cost)}</span></div>`).join('');
+}
+
+function renderDecisions(elId, decisions){
+  const el=document.getElementById(elId);
+  if(!el) return;
+  const decs=decisions.slice(0,4);
+  if(!decs.length){el.innerHTML='<div style="font-size:12px;color:#888;">Sin operaciones.</div>';return;}
+  el.innerHTML=decs.map(dec=>{
+    const cls=dec.action==='COMPRA'?'bg':dec.action==='TP'?'bg':'br';
+    return `<div class="stat-row" style="font-size:12px;">
+      <div><span style="font-weight:600;">${dec.sym}</span> <span class="badge ${cls}">${dec.action}</span> <span style="color:#888;">${fmt(dec.price||0)}</span></div>
+      <span style="color:#aaa;font-size:10px;">${dec.t||''}</span>
+    </div>`;
+  }).join('');
+}
+
+function renderLog(elId, logs){
+  const el=document.getElementById(elId);
+  if(!el) return;
+  const entries=logs.slice(0,40);
+  if(!entries.length){el.innerHTML='<div style="color:#888;">Sin entradas.</div>';return;}
+  el.innerHTML=entries.map(l=>{
+    const cls=l.type==='buy'?'buy':l.type==='sell'?'sell':l.type==='warn'?'warn':'think';
+    return `<div class="le"><span class="lt">${l.t||''}</span><span class="${cls}">${l.msg||''}</span></div>`;
+  }).join('');
+}
+
+function renderA3Factors(ranked, thresh){
+  const el=document.getElementById('a3-factors');
+  if(!el) return;
+  if(!ranked.length){el.innerHTML='<div style="font-size:12px;color:#888;">Sin datos de factores.</div>';return;}
+  const top=ranked.filter(([,s])=>s!=null&&s>-99).slice(0,6);
+  el.innerHTML=top.map(([sym,score])=>{
+    const col=score>=thresh?'#d97706':score<=-2?'#E24B4A':'#888';
+    return `<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #f5f5f5;font-size:12px;">
+      <span style="font-weight:600;">${sym}</span>
+      <span style="font-weight:700;color:${col};">${score>=0?'+':''}${score}/7</span>
+    </div>`;
+  }).join('');
+}
+
+function showTab(name,el){
+  document.querySelectorAll('.sp').forEach(e=>e.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(e=>e.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  if(el) el.classList.add('active');
+}
+
+// ---- AUTO REFRESH ----
+if(sessionStorage.getItem('auth_cmp3')==='ok'){
+  refreshAll();
+  setInterval(refreshAll,15000);
+}
+</script>
+</body>
+</html>
