@@ -985,9 +985,11 @@ def agent_loop():
         state["running"] = True
     while True:
         try:
-            # Auto-healing: si se apagó por error, se reactiva solo
+            # Auto-healing: si se apagó por error, se reactiva solo y guarda en DB
             if not state.get("running") and ALPACA_API_KEY and ALPACA_SECRET_KEY:
                 state["running"] = True
+                save_state(state)
+                print("🔄 Self-healing: agente reactivado y guardado en DB")
             if state.get("running"):
                 with agent_lock:
                     run_cycle(state)
