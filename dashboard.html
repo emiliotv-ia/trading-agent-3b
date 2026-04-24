@@ -372,6 +372,7 @@ function checkLogin(){
   const val=document.getElementById('pwd-input').value;
   if(val===PASSWORD){
     sessionStorage.setItem('auth3','ok');
+    localStorage.setItem('api_token','trading2024secreto');
     document.getElementById('login-screen').style.display='none';
     document.getElementById('app').style.display='block';
     fetchState(); loadSentimentQuiet();
