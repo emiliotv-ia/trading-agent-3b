@@ -1150,13 +1150,37 @@ def stop():
 @require_auth
 def set_config():
     data = request.get_json() or {}
-    for k in ("freq", "sl", "tp", "sz", "risk"):
+    errors = []
+    VALID_RISK = {"conservative", "balanced", "aggressive"}
+    ranges = {"freq": (60, 3600), "sl": (0.5, 20), "tp": (0.5, 50), "sz": (1, 50)}
+    for k, (lo, hi) in ranges.items():
         if k in data:
-            state["config"][k] = data[k]
+            try:
+                v = float(data[k])
+            except (TypeError, ValueError):
+                errors.append(f"{k} debe ser un número"); continue
+            if not lo <= v <= hi:
+                errors.append(f"{k} debe estar entre {lo} y {hi}"); continue
+            state["config"][k] = v
+    if "risk" in data:
+        if data["risk"] not in VALID_RISK:
+            errors.append(f"risk debe ser uno de: {', '.join(VALID_RISK)}")
+        else:
+            state["config"]["risk"] = data["risk"]
     if "convergence_threshold" in data:
-        global CONVERGENCE_BUY_THRESHOLD
-        CONVERGENCE_BUY_THRESHOLD = int(data["convergence_threshold"])
-        state["config"]["convergence_threshold"] = CONVERGENCE_BUY_THRESHOLD
+        try:
+            v = int(data["convergence_threshold"])
+        except (TypeError, ValueError):
+            errors.append("convergence_threshold debe ser un entero")
+        else:
+            if not 1 <= v <= 7:
+                errors.append("convergence_threshold debe estar entre 1 y 7")
+            else:
+                global CONVERGENCE_BUY_THRESHOLD
+                CONVERGENCE_BUY_THRESHOLD = v
+                state["config"]["convergence_threshold"] = v
+    if errors:
+        return jsonify({"ok": False, "errors": errors}), 400
     save_state(state)
     return jsonify({"ok": True, "config": state["config"]})
 
